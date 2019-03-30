@@ -7,5 +7,6 @@
     <string name="playing">- Playing -</string>
     <string name="play">Play</string>
     <string name="paused">- Paused -</string>
+    <string name="buttonOpen">Choose Folder</string>
 
 </resources>
