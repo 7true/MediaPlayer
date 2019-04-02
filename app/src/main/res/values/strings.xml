@@ -3,12 +3,15 @@
     <string name="buttonPausePlay">Run/pause</string>
     <string name="buttonStop">Stop</string>
     <string name="buttonNext">Next</string>
-    <string name="pause">Pause</string>
-    <string name="playing">- Playing -</string>
-    <string name="play">Play</string>
     <string name="paused">- Paused -</string>
     <string name="buttonOpen">Choose Folder</string>
     <string name="textviewCurrent">currentTrack</string>
     <string name="state">Not started</string>
+    <string name="idle">- IDLE -</string>
+    <string name="error">- ERROR!!! -</string>
+    <string name="playing">- PLAYING -</string>
+    <string name="pausing">- PAUSING -</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
 
 </resources>

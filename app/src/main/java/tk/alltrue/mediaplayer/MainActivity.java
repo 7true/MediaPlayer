@@ -1,30 +1,17 @@
 package tk.alltrue.mediaplayer;
 
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.channels.InterruptedByTimeoutException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
@@ -38,8 +25,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
     private TextView mCurrentTrackTextView;
     private String PATH_TO_FILE;
     private Uri PATH_URI;
-    private ArrayList<String> listmp3 = new ArrayList<String>();
-    private ArrayList<String> listmp3Names = new ArrayList<String>();
+    private ArrayList<String> listmp3 = new ArrayList<>();
+    private ArrayList<String> listmp3Names = new ArrayList<>();
 
     private final int stateMP_Error = 0;
     private final int stateMP_NotStarter = 1;
@@ -78,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         mCurrentTrack = -1;
         playNext();
         mediaPlayer.pause();
-        mStateTextView.setText("- IDLE -");
+        mStateTextView.setText(getString(R.string.idle));
         stateMediaPlayer = stateMP_NotStarter;
         mediaPlayer.setOnCompletionListener(this);
 
@@ -89,12 +76,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         File directory = new File(pathMusic);
         File[] files = directory.listFiles();
         Log.d("Files", "Size: "+ files.length);
-        for (int i = 0; i < files.length; i++)
-        {
-            if (files[i].getAbsolutePath().endsWith("mp3")) {
-                Log.d("Files MP3", "FileName:" + files[i].getName());
-                listmp3.add(files[i].getAbsolutePath());
-                listmp3Names.add(files[i].getName());
+        for (File file : files) {
+            if (file.getAbsolutePath().endsWith("mp3")) {
+                Log.d("Files MP3", "FileName:" + file.getName());
+                listmp3.add(file.getAbsolutePath());
+                listmp3Names.add(file.getName());
             }
         }
     }
@@ -106,16 +92,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         PATH_TO_FILE = PathUtil.getFileName(PATH_URI,this);
 
         try {
-            //FileInputStream fileInputStream = new FileInputStream(PATH_TO_FILE);
-            //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            //mediaPlayer.setDataSource(fileInputStream.getFD());
-            //mediaPlayer.prepare();
             mediaPlayer = MediaPlayer.create(getApplicationContext(), PATH_URI);
             Toast.makeText(this, PATH_TO_FILE, Toast.LENGTH_LONG).show();
             stateMediaPlayer = stateMP_NotStarter;
-            mStateTextView.setText("- IDLE -");
-            //PATH_TO_FILE = PATH_TO_FILE.substring(0, PATH_TO_FILE.length() - 1);
-            //String fileName = PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1);
+            mStateTextView.setText(R.string.idle);
             mCurrentTrack = listmp3Names.indexOf(PATH_TO_FILE);
             mCurrentTrackTextView.setText(PATH_TO_FILE);
         }
@@ -124,22 +104,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             e.printStackTrace();
             Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
             stateMediaPlayer = stateMP_Error;
-            mStateTextView.setText("- ERROR!!! -");
+            mStateTextView.setText(getString(R.string.error));
         }
         catch (IllegalStateException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
             stateMediaPlayer = stateMP_Error;
-            mStateTextView.setText("- ERROR!!! -");
+            mStateTextView.setText(R.string.error);
         }
-//        catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//            Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
-//            stateMediaPlayer = stateMP_Error;
-//            //mStateTextView.setText("- ERROR!!! -");
-//        }
     }
 
     Button.OnClickListener onOpenClickListener = new Button.OnClickListener() {
@@ -158,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             if (requestCode == INTENT_FOLDER_CODE) {
                 Uri audioFileUri = data.getData();
                 PATH_URI = audioFileUri;
+                assert audioFileUri != null;
                 PATH_TO_FILE = audioFileUri.getPath();
                 mStateTextView.setText(PATH_TO_FILE);
             }
@@ -175,20 +149,20 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
                     break;
                 case stateMP_NotStarter:
                     mediaPlayer.start();
-                    mPlayPauseButton.setText("Pause");
-                    mStateTextView.setText("- PLAYING -");
+                    mPlayPauseButton.setText(getString(R.string.pause));
+                    mStateTextView.setText(getString(R.string.playing));
                     stateMediaPlayer = stateMP_Playing;
                     break;
                 case stateMP_Playing:
                     mediaPlayer.pause();
-                    mPlayPauseButton.setText("Play");
-                    mStateTextView.setText("- PAUSING -");
+                    mPlayPauseButton.setText(getString(R.string.play));
+                    mStateTextView.setText(getString(R.string.pausing));
                     stateMediaPlayer = stateMP_Pausing;
                     break;
                 case stateMP_Pausing:
                     mediaPlayer.start();
-                    mPlayPauseButton.setText("Pause");
-                    mStateTextView.setText("- PLAYING -");
+                    mPlayPauseButton.setText(getString(R.string.pause));
+                    mStateTextView.setText(R.string.playing);
                     stateMediaPlayer = stateMP_Playing;
                     break;
             }
@@ -228,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         mCurrentTrackTextView.setText(PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1));
         mediaPlayer.start();
         stateMediaPlayer = stateMP_Playing;
-        mStateTextView.setText("- PLAYING -");
+        mStateTextView.setText(R.string.playing);
     }
 
 }
