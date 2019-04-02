@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         mStateTextView.setText(getString(R.string.idle));
         stateMediaPlayer = stateMP_NotStarter;
         mediaPlayer.setOnCompletionListener(this);
-
     }
 
     private void loadmp3(String pathMusic) {
@@ -86,9 +85,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
     }
 
 
-    private void initMediaPlayer()
-    {
-
+    private void initMediaPlayer() {
         PATH_TO_FILE = PathUtil.getFileName(PATH_URI,this);
 
         try {
@@ -204,5 +201,4 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
         stateMediaPlayer = stateMP_Playing;
         mStateTextView.setText(R.string.playing);
     }
-
 }
