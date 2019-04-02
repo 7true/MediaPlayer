@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             System.out.println("getPath() uri path: " + uri.getPath());
 
             // ExternalStorageProvider
-            if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
+       //     if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
                 }
 
             }
-        }
+     //   }
         return null;
     }
 
@@ -138,8 +138,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             Toast.makeText(this, PATH_TO_FILE, Toast.LENGTH_LONG).show();
             stateMediaPlayer = stateMP_NotStarter;
             mStateTextView.setText("- IDLE -");
+            PATH_TO_FILE = PATH_TO_FILE.substring(0, PATH_TO_FILE.length() - 1);
+            String fileName = PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1);
             mCurrentTrack = listmp3.indexOf(PATH_TO_FILE);
-            mCurrentTrackTextView.setText(PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1));
+            mCurrentTrackTextView.setText(fileName);
         }
         catch (IllegalArgumentException e) {
             // TODO Auto-generated catch block
