@@ -8,5 +8,7 @@
     <string name="play">Play</string>
     <string name="paused">- Paused -</string>
     <string name="buttonOpen">Choose Folder</string>
+    <string name="textviewCurrent">currentTrack</string>
+    <string name="state">Not started</string>
 
 </resources>

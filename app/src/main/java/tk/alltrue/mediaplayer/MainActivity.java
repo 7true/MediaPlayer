@@ -21,8 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.InterruptedByTimeoutException;
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
 
     private Button mPlayPauseButton;
     private Button mNextButton;
@@ -30,8 +31,10 @@ public class MainActivity extends AppCompatActivity {
     private Button mOpenButton;
 
     private TextView mStateTextView;
+    private TextView mCurrentTrackTextView;
     private String PATH_TO_FILE;
     private Uri PATH_URI;
+    private ArrayList<String> listmp3 = new ArrayList<String>();
 
     private final int stateMP_Error = 0;
     private final int stateMP_NotStarter = 1;
@@ -54,18 +57,40 @@ public class MainActivity extends AppCompatActivity {
         mTracks[1] = R.raw.gryaz;
 
         mStateTextView = findViewById(R.id.stateTextView);
+        mCurrentTrackTextView = findViewById(R.id.textViewCurrent);
         mPlayPauseButton = findViewById(R.id.buttonPausePlay);
         mStopButton = findViewById(R.id.buttonStop);
         mNextButton = findViewById(R.id.buttonNext);
         mOpenButton = findViewById(R.id.buttonOpen);
-
+        String path = Environment.getExternalStorageDirectory().toString()+"/Download";
+        loadmp3(path);
         mPlayPauseButton.setOnClickListener(onPlayPauseClickListener);
-       // mNextButton.setOnClickListener(onNextClickListener);
-        mStopButton.setOnClickListener(buttonQuitOnClickListener);
+        mNextButton.setOnClickListener(onNextClickListener);
+        mStopButton.setOnClickListener(onStopClickListener);
         mOpenButton.setOnClickListener(onOpenClickListener);
-        //mMediaPlayer = MediaPlayer.create(getApplicationContext(), mTracks[mCurrentTrack]);
-        //mMediaPlayer.setOnCompletionListener(this);
+
         mediaPlayer = new  MediaPlayer();
+        mCurrentTrack = -1;
+        playNext();
+        mediaPlayer.pause();
+        mStateTextView.setText("- IDLE -");
+        stateMediaPlayer = stateMP_NotStarter;
+        mediaPlayer.setOnCompletionListener(this);
+
+    }
+
+    private void loadmp3(String pathMusic) {
+        Log.d("Files", "Path: " + pathMusic);
+        File directory = new File(pathMusic);
+        File[] files = directory.listFiles();
+        Log.d("Files", "Size: "+ files.length);
+        for (int i = 0; i < files.length; i++)
+        {
+            if (files[i].getAbsolutePath().endsWith("mp3")) {
+                Log.d("Files MP3", "FileName:" + files[i].getName());
+                listmp3.add(files[i].getAbsolutePath());
+            }
+        }
     }
 
     public static String getPath(final Context context, final Uri uri) {
@@ -100,19 +125,21 @@ public class MainActivity extends AppCompatActivity {
         }
         return null;
     }
+
     private void initMediaPlayer()
     {
         PATH_TO_FILE = getPath(this, PATH_URI);
-
         try {
-
-            FileInputStream fileInputStream = new FileInputStream(PATH_TO_FILE);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer.setDataSource(fileInputStream.getFD());
-            mediaPlayer.prepare();
+            //FileInputStream fileInputStream = new FileInputStream(PATH_TO_FILE);
+            //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            //mediaPlayer.setDataSource(fileInputStream.getFD());
+            //mediaPlayer.prepare();
+            mediaPlayer = MediaPlayer.create(getApplicationContext(), PATH_URI);
             Toast.makeText(this, PATH_TO_FILE, Toast.LENGTH_LONG).show();
             stateMediaPlayer = stateMP_NotStarter;
             mStateTextView.setText("- IDLE -");
+            mCurrentTrack = listmp3.indexOf(PATH_TO_FILE);
+            mCurrentTrackTextView.setText(PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1));
         }
         catch (IllegalArgumentException e) {
             // TODO Auto-generated catch block
@@ -128,13 +155,13 @@ public class MainActivity extends AppCompatActivity {
             stateMediaPlayer = stateMP_Error;
             mStateTextView.setText("- ERROR!!! -");
         }
-        catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
-            stateMediaPlayer = stateMP_Error;
-            //mStateTextView.setText("- ERROR!!! -");
-        }
+//        catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//            Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
+//            stateMediaPlayer = stateMP_Error;
+//            //mStateTextView.setText("- ERROR!!! -");
+//        }
     }
 
     Button.OnClickListener onOpenClickListener = new Button.OnClickListener() {
@@ -156,49 +183,54 @@ public class MainActivity extends AppCompatActivity {
                 PATH_TO_FILE = audioFileUri.getPath();
                 mStateTextView.setText(PATH_TO_FILE);
             }
+            mediaPlayer.release();
+            initMediaPlayer();
         }
-       initMediaPlayer();
     }
 
     Button.OnClickListener onPlayPauseClickListener = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
 
-                switch(stateMediaPlayer){
-                    case stateMP_Error:
-                        break;
-                    case stateMP_NotStarter:
-                        mediaPlayer.start();
-                        mPlayPauseButton.setText("Pause");
-                        mStateTextView.setText("- PLAYING -");
-                        stateMediaPlayer = stateMP_Playing;
-                        break;
-                    case stateMP_Playing:
-                        mediaPlayer.pause();
-                        mPlayPauseButton.setText("Play");
-                        mStateTextView.setText("- PAUSING -");
-                        stateMediaPlayer = stateMP_Pausing;
-                        break;
-                    case stateMP_Pausing:
-                        mediaPlayer.start();
-                        mPlayPauseButton.setText("Pause");
-                        mStateTextView.setText("- PLAYING -");
-                        stateMediaPlayer = stateMP_Playing;
-                        break;
+            switch(stateMediaPlayer){
+                case stateMP_Error:
+                    break;
+                case stateMP_NotStarter:
+                    mediaPlayer.start();
+                    mPlayPauseButton.setText("Pause");
+                    mStateTextView.setText("- PLAYING -");
+                    stateMediaPlayer = stateMP_Playing;
+                    break;
+                case stateMP_Playing:
+                    mediaPlayer.pause();
+                    mPlayPauseButton.setText("Play");
+                    mStateTextView.setText("- PAUSING -");
+                    stateMediaPlayer = stateMP_Pausing;
+                    break;
+                case stateMP_Pausing:
+                    mediaPlayer.start();
+                    mPlayPauseButton.setText("Pause");
+                    mStateTextView.setText("- PLAYING -");
+                    stateMediaPlayer = stateMP_Playing;
+                    break;
             }
         }
     };
-/*
+
     Button.OnClickListener onNextClickListener = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mediaPlayer.release();
-            mCurrentTrack++;
-            mCurrentTrack = mCurrentTrack%mTracks.length;
-            mediaPlayer = MediaPlayer.create(getApplicationContext(), mTracks[mCurrentTrack]);
-            mediaPlayer.start();
+            playNext();
         }
     };
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+        if (mCurrentTrack < mTracks.length) {
+            playNext();
+        }
+    }
+
 
     Button.OnClickListener onStopClickListener = new Button.OnClickListener() {
         @Override
@@ -208,28 +240,17 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
     };
-*/
-/*
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        mediaPlayer.release();
-        if (mCurrentTrack < mTracks.length) {
-            mCurrentTrack++;
-            mediaPlayer = MediaPlayer.create(getApplicationContext(), mTracks[mCurrentTrack]);
-            mediaPlayer.start();
-        }
-    }
-    */
 
-    Button.OnClickListener buttonQuitOnClickListener
-            = new Button.OnClickListener(){
-        @Override
-        public void onClick(View v) {
-            // TODO Auto-generated method stub
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            finish();
-        }
-    };
+    private void playNext() {
+        mediaPlayer.release();
+        mCurrentTrack++;
+        mCurrentTrack = mCurrentTrack%listmp3.size();
+        PATH_TO_FILE = listmp3.get(mCurrentTrack);
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(PATH_TO_FILE));
+        mCurrentTrackTextView.setText(PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1));
+        mediaPlayer.start();
+        stateMediaPlayer = stateMP_Playing;
+        mStateTextView.setText("- PLAYING -");
+    }
 
 }
