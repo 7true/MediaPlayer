@@ -2,6 +2,7 @@ package tk.alltrue.mediaplayer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -10,6 +11,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.channels.InterruptedByTimeoutException;
 import java.util.ArrayList;
 
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
     private String PATH_TO_FILE;
     private Uri PATH_URI;
     private ArrayList<String> listmp3 = new ArrayList<String>();
+    private ArrayList<String> listmp3Names = new ArrayList<String>();
 
     private final int stateMP_Error = 0;
     private final int stateMP_NotStarter = 1;
@@ -89,46 +94,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             if (files[i].getAbsolutePath().endsWith("mp3")) {
                 Log.d("Files MP3", "FileName:" + files[i].getName());
                 listmp3.add(files[i].getAbsolutePath());
+                listmp3Names.add(files[i].getName());
             }
         }
     }
 
-    public static String getPath(final Context context, final Uri uri) {
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-        // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-            System.out.println("getPath() uri: " + uri.toString());
-            System.out.println("getPath() uri authority: " + uri.getAuthority());
-            System.out.println("getPath() uri path: " + uri.getPath());
-
-            // ExternalStorageProvider
-       //     if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-                System.out.println("getPath() docId: " + docId + ", split: " + split.length + ", type: " + type);
-
-                // This is for checking Main Memory
-                if ("primary".equalsIgnoreCase(type)) {
-                    if (split.length > 1) {
-                        return Environment.getExternalStorageDirectory() + "/" + split[1] + "/";
-                    } else {
-                        return Environment.getExternalStorageDirectory() + "/";
-                    }
-                    // This is for checking SD Card
-                } else {
-                    return "storage" + "/" + docId.replace(":", "/");
-                }
-
-            }
-     //   }
-        return null;
-    }
 
     private void initMediaPlayer()
     {
-        PATH_TO_FILE = getPath(this, PATH_URI);
+
+        PATH_TO_FILE = PathUtil.getFileName(PATH_URI,this);
+
         try {
             //FileInputStream fileInputStream = new FileInputStream(PATH_TO_FILE);
             //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -138,10 +114,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnCom
             Toast.makeText(this, PATH_TO_FILE, Toast.LENGTH_LONG).show();
             stateMediaPlayer = stateMP_NotStarter;
             mStateTextView.setText("- IDLE -");
-            PATH_TO_FILE = PATH_TO_FILE.substring(0, PATH_TO_FILE.length() - 1);
-            String fileName = PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1);
-            mCurrentTrack = listmp3.indexOf(PATH_TO_FILE);
-            mCurrentTrackTextView.setText(fileName);
+            //PATH_TO_FILE = PATH_TO_FILE.substring(0, PATH_TO_FILE.length() - 1);
+            //String fileName = PATH_TO_FILE.substring(PATH_TO_FILE.lastIndexOf("/")+1);
+            mCurrentTrack = listmp3Names.indexOf(PATH_TO_FILE);
+            mCurrentTrackTextView.setText(PATH_TO_FILE);
         }
         catch (IllegalArgumentException e) {
             // TODO Auto-generated catch block
